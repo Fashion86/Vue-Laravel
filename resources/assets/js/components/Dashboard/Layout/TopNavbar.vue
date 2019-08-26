@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Dashboard</a>
+      <!--<a class="navbar-brand" href="#">Dashboard</a>-->
       <button type="button"
               class="navbar-toggler navbar-toggler-right"
               :class="{toggled: $sidebar.showSidebar}"
@@ -45,17 +45,16 @@
               <!--Account-->
             <!--</a>-->
           <!--</li>-->
-          <drop-down title="Dropdown">
-            <a class="dropdown-item" href="#">Action</a>
-            <a class="dropdown-item" href="#">Another action</a>
-            <a class="dropdown-item" href="#">Something</a>
-            <a class="dropdown-item" href="#">Another action</a>
-            <a class="dropdown-item" href="#">Something</a>
-            <div class="divider"></div>
-            <a class="dropdown-item" href="#">Separated link</a>
-          </drop-down>
+          <!--<drop-down title="Action">-->
+            <!--<a class="dropdown-item" href="#">Another action</a>-->
+            <!--<a class="dropdown-item" href="#">Something</a>-->
+            <!--<a class="dropdown-item" href="#">Another action</a>-->
+            <!--<a class="dropdown-item" href="#">Something</a>-->
+            <!--<div class="divider"></div>-->
+            <!--<a class="dropdown-item" href="#">Log out</a>-->
+          <!--</drop-down>-->
           <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a @click="onLogout()" class="nav-link">
               Log out
             </a>
           </li>
@@ -92,11 +91,23 @@
       },
       hideSidebar () {
         this.$sidebar.displaySidebar(false)
+      },
+      onLogout() {
+        this.$store
+            .dispatch("logout")
+            .then(msg => {
+              this.$router.push({ name: "login" });
+            })
+            .catch(e => {
+              console.error(e);
+            });
       }
     }
   }
 
 </script>
 <style>
-
+  a:hover {
+    cursor: pointer;
+  }
 </style>

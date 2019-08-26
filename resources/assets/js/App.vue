@@ -6,7 +6,16 @@
 </template>
 
 <script>
-  export default {}
+  export default {
+    name: "app",
+
+    created() {
+      const authToken = localStorage.getItem("token");
+      if (authToken !== null) {
+        this.$store.commit("setAuthToken", authToken);
+      }
+    }
+  };
 </script>
 <style lang="scss">
   // Fullcalendar Css
