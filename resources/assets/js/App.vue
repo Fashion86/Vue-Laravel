@@ -11,8 +11,12 @@
 
     created() {
       const authToken = localStorage.getItem("token");
+      const userID = parseInt(localStorage.getItem("userID"));
+      const currentProject = JSON.parse(localStorage.getItem("currentProject"));
       if (authToken !== null) {
         this.$store.commit("setAuthToken", authToken);
+        this.$store.commit("setUser", userID);
+        this.$store.commit("setCurrentProject", currentProject);
       }
     }
   };

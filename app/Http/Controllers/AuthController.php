@@ -68,4 +68,14 @@ class AuthController extends Controller
 
         return Response::json(['result'=>'success', 'user'=>$user]);
     }
+
+    public function getUsers() {
+        $totalCount = count(User::all());
+        $users = User::all();
+        if ($totalCount == 0) {
+            return response()->json(['totalCount'=>$totalCount, 'users'=>[]], 200);
+        } else {
+            return response()->json(['totalCount'=>$totalCount, 'users'=>$users], 200);
+        }
+    }
 }

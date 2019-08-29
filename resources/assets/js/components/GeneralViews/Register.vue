@@ -43,7 +43,6 @@
 
 <script>
 
-  import { mapGetters } from "vuex"
   import Card from '../../components/UIComponents/Cards/Card.vue'
   import { required, email } from 'vuelidate/lib/validators'
 
@@ -117,7 +116,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang='scss'>
   .wraper{
     margin-right: auto; /* 1 */
     margin-left:  auto; /* 1 */

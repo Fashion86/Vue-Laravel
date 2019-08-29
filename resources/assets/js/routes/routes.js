@@ -6,7 +6,7 @@ import Router from "vue-router";
 // Admin pages
 import Overview from '../components/Dashboard/Views/Overview.vue'
 import UserProfile from '../components/Dashboard/Views/UserProfile.vue'
-import TableList from '../components/Dashboard/Views/TableList.vue'
+import ProjectList from '../components/Dashboard/Views/ProjectList.vue'
 import Typography from '../components/Dashboard/Views/Typography.vue'
 import Icons from '../components/Dashboard/Views/Icons.vue'
 import Notifications from '../components/Dashboard/Views/Notifications.vue'
@@ -53,9 +53,9 @@ const router = new Router({
           component: Events
         },
         {
-          path: 'table-list',
-          name: 'Table List',
-          component: TableList
+          path: 'project-list',
+          name: 'Project List',
+          component: ProjectList
         },
         {
           path: 'typography',

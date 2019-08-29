@@ -18,13 +18,9 @@ export default {
     getUsersFromApi({ commit, rootState }) {
       return new Promise((resolve, reject) => {
         invoiceApi
-          .get('/users/', {
-            headers: {
-              Authorization: `Token ${rootState.authToken}`
-            }
-          })
-          .then(({ data }) => {
-            commit('setUsersList', data)
+          .get('/users', )
+          .then(res => {
+            commit('setUsersList', res.data['users'])
             resolve('success')
           })
           .catch(error => reject(error))

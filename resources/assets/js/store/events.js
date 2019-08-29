@@ -14,49 +14,41 @@ export default {
     getEvent: ({ events }) => id => events.find(event => event.id === id)
   },
   actions: {
+
     getEventsFromApi({ commit, rootState }) {
       return new Promise((resolve, reject) => {
         invoiceApi
-          .get('/events/', {
-            headers: {
-              Authorization: `Token ${rootState.authToken}`
-            }
-          })
-          .then(({ data }) => {
-              let allevents = data;
-              allevents.forEach(event => {
-                event.backgroundColor = '#3788d8';
+            .get('/events', {
+            })
+            .then(res => {
+              res.data['events'].forEach(e => {
+                e.backgroundColor = '#3788d8';
+                // e.borderColor = 'transparent';
+                // e.textColor = '#000';
+                // if (e.type !== "event") {
+                //   e.borderColor = 'transparent';
+                //   e.textColor = 'blue';
+                // }
+
               });
-              if (!rootState.is_admin) { // when user is not admin, filter only own events
-                allevents = allevents.filter(event => {
-                  if (event.employees.includes(rootState.userID)) {
-                    return true;
-                  }
-                });
-              }
-            commit('setEventsList', allevents);
-            resolve('success')
-          })
-          .catch(error => reject(error))
+              commit('setEventsList', res.data['events'])
+              resolve('success')
+            })
+            .catch(error => reject(error))
       })
     },
 
-    addEvent({ commit, rootState }, postData) {
+    createEvent({ commit, rootState }, formData) {
       return new Promise((resolve, reject) => {
         invoiceApi
-          .post('/events/', postData, {
-            headers: {
-              Authorization: `Token ${rootState.authToken}`
-            }
-          })
-          .then(response => {
-            if (response.status === 201) {
-              commit('addEvent', { ...response.data })
-              // rootState.eventsCount++
-              resolve('created')
-            }
-          })
-          .catch(e => reject(e))
+            .post('/event', formData)
+            .then(response => {console.log('ssss', response)
+              if (response.status === 200) {
+                commit('addEvent', response.data.event)
+                resolve("created");
+              }
+            })
+            .catch(e => {reject(e)})
       })
     },
 
@@ -82,15 +74,10 @@ export default {
     removeEvent({ commit, rootState }, id) {
       new Promise((resolve, reject) => {
         invoiceApi
-          .delete(`/events/${id}`, {
-            headers: {
-              Authorization: `Token ${rootState.authToken}`
-            }
-          })
+          .delete(`/events/${id}`)
           .then(response => {
             if (response.status >= 200 && response.status <= 204) {
               commit('removeEvent', id);
-              // rootState.eventssCount--
               resolve('removed')
             } else reject('error')
           })

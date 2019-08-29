@@ -8,7 +8,7 @@
     <tbody>
     <tr v-for="item in data">
       <slot :row="item">
-        <td v-for="column in columns" v-if="hasValue(item, column)">{{itemValue(item, column)}}</td>
+        <td v-for="column in columns" v-if="hasValue(item, column)" @click="gotoProject(item)">{{itemValue(item, column)}}</td>
       </slot>
     </tr>
     </tbody>
@@ -22,6 +22,10 @@
       data: Array
     },
     methods: {
+      gotoProject(project) {
+        this.$store.commit("setCurrentProject", project);
+        this.$router.push({ name: "Events" });
+      },
       hasValue (item, column) {
         return item[column.toLowerCase()] !== 'undefined'
       },

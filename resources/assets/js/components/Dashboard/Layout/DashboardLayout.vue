@@ -10,19 +10,20 @@
         <!--<i class="nc-icon nc-circle-09"></i>-->
         <!--<p>User Profile</p>-->
       <!--</sidebar-link>-->
+      <sidebar-link to="/project-list">
+        <i class="nc-icon nc-notes"></i>
+        <p>Projects</p>
+      </sidebar-link>
       <sidebar-link to="/events">
         <i class="nc-icon nc-paper-2"></i>
-        <p>Events</p>
+        <p>Calendar</p>
       </sidebar-link>
-      <sidebar-link to="/table-list">
-        <i class="nc-icon nc-notes"></i>
-        <p>Table list</p>
-      </sidebar-link>
+
       <!--<sidebar-link to="/admin/typography">-->
         <!--<i class="nc-icon nc-paper-2"></i>-->
         <!--<p>Typography</p>-->
       <!--</sidebar-link>-->
-      <!--<sidebar-link to="/admin/icons">-->
+      <!--<sidebar-link to="/icons">-->
         <!--<i class="nc-icon nc-atom"></i>-->
         <!--<p>Icons</p>-->
       <!--</sidebar-link>-->
