@@ -15,6 +15,11 @@ let mix = require('laravel-mix');
       publicPath: "/",
       chunkFilename: 'js/[name].[chunkhash].js'
     },
+     node: {
+       fs: 'empty',
+       net: 'empty',
+       tls: 'empty',
+     }
   })
 
 mix.js('resources/assets/js/app.js', 'public/js')

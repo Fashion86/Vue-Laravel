@@ -55,16 +55,15 @@ class ProjectController extends Controller
         }
     }
 
-    public function deleteProject(Request $request) {
-        $project = Project::find($request->get('id'));
+    public function deleteProject($id) {
+        $project = Project::find($id);
         try {
             $project->delete();
             return response()->json(['success'=>'Project Successfully Removed']);
         } catch(JWTException $e) {
-            return response()->json(['error'=>'Project Remove Failed']);
+            return response()->json(['error'=>$e], 500);
         }
     }
-
     public function getProjects() {
 //        $page = Input::get('pageNo') != "null" ? Input::get('pageNo') : 1;
 //        $limit = Input::get('numPerPage') != "null" ? Input::get('numPerPage') : 10;

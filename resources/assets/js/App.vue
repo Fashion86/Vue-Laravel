@@ -27,6 +27,9 @@
   @import '~@fullcalendar/bootstrap/main.css';
   @import '~@fullcalendar/daygrid/main.css';
   @import '~@fullcalendar/timegrid/main.css';
+  .wrapper {
+    font-family: "Lucida Grande", sans-serif;
+  }
   .vue-notifyjs.notifications{
     .list-move {
       transition: transform 0.3s, opacity 0.4s;
@@ -51,6 +54,16 @@
     .list-leave-to {
       opacity: 0;
       transform: scale(1.2, 0.7);
+    }
+  }
+  .container-fluid {
+    padding: 20px;
+  }
+  .btnGroup {
+    padding: 10px;
+    button {
+      margin-left: 3px;
+      margin-bottom: 10px;
     }
   }
 </style>

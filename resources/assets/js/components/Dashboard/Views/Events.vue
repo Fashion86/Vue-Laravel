@@ -4,9 +4,16 @@
       <div class="row">
         <div class="col-md-12">
           <card>
+            <template slot="header">
+              <!--<button type="button" class="btn btn-outline-primary pull-right" @click="onExternalDialog()">External Calendar</button>-->
+              <drop-down title="External Calendar" style="list-style: none; max-width: 180px">
+                <a class="dropdown-item" @click="onExternalDialog()">Import a calendar</a>
+                <a class="dropdown-item" @click="onExternalSet()">Setting</a>
+              </drop-down>
+            </template>
             <div class=''>
               <!--<b-btn variant="success" @click="toggleWeekends" size="sm">toggle weekends</b-btn>-->
-              <!--<button @click="gotoPast">go to a date in the past</button>-->
+              <!--<button @click="">the past</button>-->
               <FullCalendar
                   class='book-calendar'
                   ref="fullCalendar"
@@ -15,7 +22,7 @@
                   :header="{
                   left: 'prev,next today',
                   center: 'title',
-                  right: 'dayGridYear'
+                  right: 'dayGridYear,dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                 }"
                   :plugins="calendarPlugins"
                   :weekends="calendarWeekends"
@@ -30,6 +37,79 @@
               />
             </div>
           </card>
+          <modal name="external-calendar" transition="pop-out" :width="400" height="auto">
+            <div class="container-fluid">
+              <h5>
+                <span>Import External Calendar</span>
+              </h5>
+              <form @submit.stop.prevent="onExternalSubmit">
+                <div class="col-12 form-inline">
+                  <label class="col-3">Name:</label>
+                  <input class="col-9" type="text" v-model="externalform.name" placeholder="Enter a name">
+                  <span class="col-9 offset-3" style="color: red" v-if="$v.externalform.name.$error">Name is required</span>
+                </div>
+                <div class="col-12 form-inline">
+                  <label class="col-3">URL:</label>
+                  <input class="col-9" type="text" v-model="externalform.url" placeholder="URL of Calendar">
+                  <span class="col-9 offset-3" style="color: red" v-if="$v.externalform.url.$error">URL is required</span>
+                </div>
+                <div class="col-12 form-inline">
+                  <label class="col-3">Color:</label>
+                  <sketch-picker
+                      @input="updateValue"
+                      :value="externalform.color"
+                      :presetColors="[
+    '#f00', '#00ff00', '#00ff0055', 'rgb(201, 76, 76)', 'rgba(0,0,255,1)', 'hsl(89, 43%, 51%)', 'hsla(89, 43%, 51%, 0.6)'
+  ]"
+                  ></sketch-picker>
+                  <!--<chrome-picker :value="externalform.color" @input="updateValue"></chrome-picker>-->
+                </div>
+
+                <div class="btnGroup">
+                  <button type="button" class="btn btn-outline-secondary pull-right" @click="onCancel()">Cancel</button>
+                  <button type="submit" class="btn btn-outline-primary pull-right">Import</button>
+                </div>
+              </form>
+            </div>
+          </modal>
+
+          <modal name="external-setting" transition="pop-out" :width="500" height="auto">
+            <div class="container-fluid">
+              <h5>
+                <span>Manage External Calendar</span>
+              </h5>
+              <div class="table-responsive" style="max-height: 500px; overflow: auto">
+                <table class="table">
+                  <thead>
+                  <slot name="columns">
+                    <th style="min-width: 150px">Name</th>
+                    <th>Color</th>
+                    <th colspan="1">Show/Hide</th>
+                  </slot>
+                  </thead>
+                  <tbody>
+                  <tr v-for="item in externals">
+                    <slot :row="item">
+                      <td style="min-width: 150px">{{item.name}}</td>
+                      <td><div style="display: flex"><span  v-bind:style="style(item)">{{item.color}}</span></div></td>
+                      <td>
+                        <label class="switch">
+                          <input type="checkbox" v-model="item.show" v-bind:checked="item.show" @change="onShowChange(item)">
+                          <span class="slider"></span>
+                        </label>
+                        <!--<div>-->
+                          <!--<a @click="onEdit(item)"><font-awesome-icon icon="pen-alt" /></a>-->
+                          <!--<a @click="ondelete(item)"><font-awesome-icon icon="trash-alt" /></a>-->
+                        <!--</div>-->
+                      </td>
+                    </slot>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </modal>
+
           <modal name="event-modal" transition="pop-out" :width="400" height="auto">
               <form @submit.prevent="onSubmit">
                 <div class="box box-part">
@@ -45,18 +125,22 @@
                   </select>
                   <span style="color: red" v-if="$v.form.project.$error">Project is required</span>
                 </div>
-                <div class="box" v-if="!mutiday">
+                <div class="box" v-if="!form.multi_day">
                   <div class="box-content">
                     <span>When?</span>
-                    <div class="flex-column">
-                      <input type="date" class="dateinput" v-model="form.start_date" style="width: 60%">
-                      <span style="width: 10%">
+                    <div class="my-flex">
+                      <div style="width: 60%">
+                        <input type="date" class="dateinput"
+                               v-on:keyup="preventkey" v-on:keypress="preventkey" v-model="form.start_date" style="width: 80%">
+                        <span style="width: 10%;margin-left: 10px">
                         at
                       </span>
-                      <select v-model="form.start_time" class="select" data-dropup-auto="false"
-                              data-size="10" style="width: 30%;">
-                        <option v-for="time in times">{{time}}</option>
-                      </select>
+                      </div>
+                      <div  style="width: 30%; flex: 1">
+                        <input type="text" class="dateinput" v-model="form.start_time" style="width: 100%" placeholder="any time">
+                        <label style="color: #5e5e5e">ex: 9: 30 am</label>
+                      </div>
+
                     </div>
                     <span style="color: red" v-if="$v.form.start_date.$error">Start date is required</span>
                   </div>
@@ -65,18 +149,21 @@
                   </div>
                 </div>
 
-                <div class="box" v-if="mutiday">
+                <div class="box" v-if="form.multi_day">
                   <div class="flexdiv">
                     <span>Starts</span>
                     <div>
-                      <input type="date" class="dateinput" v-model="form.start_date">
+                      <input type="date" class="dateinput" v-model="form.start_date"
+                             v-on:keyup="preventkey" v-on:keypress="preventkey" style="width: 100%">
                       <span style="color: red" v-if="$v.form.start_date.$error">Start date is required</span>
                     </div>
                   </div>
                   <div class="flexdiv">
                     <span>Ends</span>
                     <div>
-                      <input type="date" class="dateinput" v-model="form.end_date">
+                      <input type="date" class="dateinput" v-model="form.end_date"
+                             v-on:keyup="preventkey" v-on:keypress="preventkey" style="width: 100%">
+                      <span style="color: red" v-if="$v.form.end_date.$error">End date is required</span>
                     </div>
                   </div>
                   <div class="flexdiv">
@@ -120,10 +207,9 @@
                       <a class="cancelbtn" @click="onCancel()"><span>Cancel</span></a>
                   </div>
                   <div class="flexdiv">
-                    <a v-if="editEvent" class="pull-right" @click="ondelete()"><span>Remove</span></a>
+                    <a v-if="editEvent" class="pull-right" @click="ondelete()"><span><font-awesome-icon icon="trash-alt" /></span></a>
                   </div>
                 </div>
-
               </form>
           </modal>
         </div>
@@ -141,21 +227,26 @@
   import interactionPlugin from '@fullcalendar/interaction'
   import bootstrapPlugin from '@fullcalendar/bootstrap'
   import Card from '../../../components/UIComponents/Cards/Card.vue'
-  import PRadio from "../../UIComponents/Inputs/Radio";
+  import PRadio from "../../UIComponents/Inputs/Radio"
   import { required } from 'vuelidate/lib/validators'
-  const MODAL_WIDTH = 656
+  import ical from 'ical'
+  import { Chrome, Sketch } from 'vue-color'
 
   export default {
     components: {
       PRadio,
       FullCalendar,
-      Card
+      Card,
+      // 'photoshop-picker': Photoshop,
+      'chrome-picker': Chrome,
+      'sketch-picker': Sketch,
     },
     computed: {
       ...mapGetters({
         projects: "projectStore/projects",
         users: "userStore/users",
         events: "eventStore/events",
+        externals: "eventStore/externals",
         userID: "userID"
       })
     },
@@ -167,7 +258,18 @@
         start_date: {
           required
         },
+        end_date: {
+          required
+        },
         project: {
+          required
+        }
+      },
+      externalform: {
+        name: {
+          required
+        },
+        url: {
           required
         }
       }
@@ -180,35 +282,36 @@
           bootstrapPlugin,
           interactionPlugin// needed for dateClick
         ],
-        modalWidth: MODAL_WIDTH,
         calendarWeekends: true,
-        dialogTilte: "New Event",
         editEvent: null,
-        moveEvent: null,
-        mutiday: false,
         eventType: false,
+        externalform: {
+          name: null,
+          url: null,
+          color: '#36E841'
+        },
         form: {
           title: null,
           start_date: "",
           end_date: null,
           start_time: "",
-          end_time: null,
+          end_time: "",
           project: null,
           user: null,
+          multi_day: false,
           type: "event"
         },
-        times: ["12:00 AM", "12:30 AM", "1:00 AM", "1:30 AM", "2:00 AM", "2:30 AM",
-          "3:00 AM", "3:30 AM", "4:00 AM", "4:30 AM", "5:00 AM", "5:30 AM", "6:00 AM", "6:30 AM",
-          "7:00 AM", "7:30 AM", "8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM",
-          "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
-          "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM",
-          "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM", "10:00 PM", "10:30 PM",
-          "11:00 PM", "11:30 PM"]
       }
     },
     methods: {
+      style(e) {
+        return 'background-color: ' + e.color;
+      },
       toggleWeekends() {
         this.calendarWeekends = !this.calendarWeekends // update a property
+      },
+      preventkey(e) {
+        e.preventDefault();
       },
       gotoEvent(event) {
         const date_time = new Date(event.start);
@@ -216,11 +319,21 @@
         let calendarApi = this.$refs.fullCalendar.getApi();
         calendarApi.gotoDate(date) // goto map event month
       },
+      onExternalDialog() {
+        this.externalform.name = null;
+        this.externalform.url = null;
+        this.$modal.show('external-calendar');
+      },
+      onExternalSet() {
+        this.$modal.show('external-setting');
+      },
       onMulti(flag) {
-        this.mutiday = flag;
+        this.form.multi_day = flag;
       },
       onCancel() {
         this.$modal.hide('event-modal');
+        this.$modal.hide('external-calendar');
+        this.$modal.hide('external-setting');
       },
       onEventType(type) {
         this.eventType = type;
@@ -247,41 +360,49 @@
       convertTime(isoDate) {
         const date_time = new Date(isoDate);
         const date = date_time.getFullYear() + '-' + ("0" + (date_time.getMonth() + 1)).slice(-2) + '-' + ("0" + date_time.getDate()).slice(-2);
-        const time = date_time.toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', hour12: true});
-        return {date: date, time: time}
+        return {date: date}
       },
       handleDateClick(arg) {
-        this.mutiday = false;
         this.editEvent = null;
         this.eventType = true;
-        const start_date = new Date(arg.dateStr);
         this.form.start_date = arg.dateStr;
         this.form.end_date = arg.dateStr;
-        this.form.start_time = "9:00 AM";
+        this.form.start_time = "";
+        this.form.end_time = "";
         this.form.user = this.userID;
         this.form.title = null;
         this.form.type = "event";
         this.form.project = null;
+        this.form.multi_day = false;
         this.$modal.show('event-modal');
       },
       handleEventClick(arg) {
 
         const editEvent = this.events.find(e => e.id === parseInt(arg.event.id));
-        this.editEvent = editEvent;
+        this.editEvent = Object.assign({}, editEvent);
         if (arg.jsEvent.srcElement.type === "checkbox") {
-          console.log('dddd', arg.jsEvent.target.checked)
+          this.editEvent.complete = arg.jsEvent.target.checked;
+          this.$store
+              .dispatch("eventStore/updateEvent", this.editEvent)
+              .then(msg => {
+                this.$modal.hide('event-modal');
+              })
+              .catch(e => {
+                this.$modal.hide('event-modal');
+              });
           return;
         }
 
         const start_date = this.convertTime(arg.event.start).date;
-        const start_time = this.convertTime(arg.event.start).time;
-        const end_date = this.convertTime(arg.event.end).date;
-        const end_time = this.convertTime(arg.event.end).time;
+        let end_date = this.convertTime(arg.event.start).date;
+        if (arg.event.end) {
+          end_date = this.convertTime(arg.event.end).date;
+        }
 
         this.form.start_date = start_date;
-        this.form.start_time = start_time;
+        this.form.start_time = editEvent.start_time;
         this.form.end_date = end_date;
-        this.form.end_time = end_time;
+        this.form.end_time = editEvent.end_time;
         this.form.title = editEvent.title;
         this.form.type = editEvent.type;
         this.form.user = editEvent.user_id;
@@ -290,51 +411,23 @@
         if (editEvent.type === "milestone") {
           this.eventType = false;
         }
+        if (end_date) {
+          this.form.multi_day = true;
+        } else {
+          this.form.multi_day = false;
+        }
         this.$modal.show('event-modal');
       },
       handleResize(arg) {
         console.log('resize', arg)
       },
       handleDrop(arg) {
-      },
-      eventRender(event, element, view ) {console.log('dddd', this.events)
-        let checkEvent = this.events.find(e=> e.id === parseInt(event.event.id));
-        if (checkEvent.type === "milestone") {
-          checkEvent.backgroundColor = "green";
-          let answer = document.createElement('input');
-          answer.setAttribute('type', 'checkbox');
-          answer.setAttribute('id',   'answer');
-          answer.setAttribute('checked',   'true');
-          event.el.getElementsByClassName("fc-content")[0].insertBefore(answer, event.el.getElementsByClassName("fc-content")[0].firstChild);
-        }
-
-
-      },
-      onSubmit() {
-        this.$v.form.$touch();
-        if(this.$v.form.$error) return
-
-        let start = new Date(this.form.start_date + ' ' + this.form.start_time).toISOString();
-        let end = null;
-        if (this.mutiday) {
-          start = new Date(this.form.start_date).toISOString();
-          end = new Date(this.form.end_date).toISOString();
-        } else {
-          start = new Date(this.form.start_date + ' ' + this.form.start_time).toISOString();
-          end = null;
-        }
-
-        let event_data = {
-          title: this.form.title,
-          type: this.form.type,
-          start: start,
-          end: end,
-          user_id: this.form.user,
-          project_id: this.form.project
-        };
-
+        let editEvent = this.events.find(e => e.id === parseInt(arg.event.id));
+        this.editEvent = Object.assign({}, editEvent);
+        this.editEvent.start = arg.event.start;
+        this.editEvent.end = arg.event.end;
         this.$store
-            .dispatch("eventStore/createEvent", event_data)
+            .dispatch("eventStore/updateEvent", this.editEvent)
             .then(msg => {
               console.log(msg);
               this.$modal.hide('event-modal');
@@ -343,6 +436,141 @@
               console.error('ddd', e);
               this.$modal.hide('event-modal');
             });
+      },
+      eventRender(event, element, view ) {
+        let checkEvent = this.events.find(e=> e.id === parseInt(event.event.id));
+        if (checkEvent) {
+          if (checkEvent.type === "milestone") {
+            let answer = document.createElement('input');
+            answer.setAttribute('type', 'checkbox');
+            answer.setAttribute('id',   'answer');
+            if (checkEvent.complete === 1) {
+              answer.setAttribute('checked',   'true');
+            }
+
+            event.el.getElementsByClassName("fc-content")[0].insertBefore(answer, event.el.getElementsByClassName("fc-content")[0].firstChild);
+            if (checkEvent.complete === 1) {
+              event.el.getElementsByClassName("fc-content")[0].classList.add("completed");
+            }
+          } else if (checkEvent.type === "event") {
+            let li = document.createElement('li');
+            event.el.getElementsByClassName("fc-content")[0].insertBefore(li, event.el.getElementsByClassName("fc-content")[0].firstChild);
+          } else {
+            const external = this.externals.find(c => c.id === checkEvent.external_id);
+            // if (external.show === 1) {
+            //   checkEvent.backgroundColor = external.color;
+            //   checkEvent.borderColor = external.color;
+            //   checkEvent.textColor = '#000';
+            // } else {
+            //   checkEvent.backgroundColor = 'transparent';
+            //   checkEvent.borderColor = 'transparent';
+            //   checkEvent.textColor = 'transparent';
+            // }
+          }
+        }
+      },
+      onSubmit() {
+        this.$v.form.$touch();
+        if(this.$v.form.$error) return
+        let start = new Date(this.form.start_date).toISOString();
+        // console.log('dddd', new Date('2019-09-19 20:00'))
+        let end = null;
+        if (this.form.multi_day) {
+          end = new Date(this.form.end_date).toISOString();
+        }
+
+        let event_data = {
+          title: this.form.title,
+          type: this.form.type,
+          start: start,
+          end: end,
+          start_time: this.form.start_time,
+          end_time: this.form.end_time,
+          user_id: this.form.user,
+          project_id: this.form.project,
+          multi_day: this.form.multi_day
+        };
+        if (!this.editEvent) { // create
+          this.$store
+              .dispatch("eventStore/createEvent", event_data)
+              .then(msg => {
+                console.log(msg);
+                this.$modal.hide('event-modal');
+              })
+              .catch(e => {
+                console.error('ddd', e);
+                this.$modal.hide('event-modal');
+              });
+        } else { // update
+          event_data.id = this.editEvent.id;
+          this.$store
+              .dispatch("eventStore/updateEvent", event_data)
+              .then(msg => {
+                console.log(msg);
+                this.$modal.hide('event-modal');
+              })
+              .catch(e => {
+                console.error('ddd', e);
+                this.$modal.hide('event-modal');
+              });
+        }
+
+      },
+      onExternalSubmit() {
+        this.$v.externalform.$touch();
+        if(this.$v.externalform.$error) return;
+
+        ical.fromURL(this.externalform.url, {}, (err, data) => {
+          if (err) {
+            window.alert('import error');
+            return;
+          }
+          let externals = [];
+          for (let k in data) {
+            if (data.hasOwnProperty(k)) {
+              let ev = data[k];
+              if (data[k].type === 'VEVENT') {
+                ev.title = ev.summary;
+                ev.start = ev.start.toISOString();
+                if (ev.end) {
+                  ev.end = ev.end.toISOString();
+                }
+                externals.push(ev);
+                // console.log('ddddd', data[k], ev.start)
+                // console.log(`${ev.summary} is in ${ev.location} on the ${ev.start.getDate()} of ${months[ev.start.getMonth()]} at ${ev.start.toLocaleTimeString('en-GB')}`);
+
+              }
+            }
+          }
+          let event_data = {
+            name: this.externalform.name,
+            color: this.externalform.color,
+            events: externals
+          };
+          this.$store
+              .dispatch("eventStore/importExternalEvent", event_data)
+              .then(msg => {
+                this.$modal.hide('external-calendar');
+              })
+              .catch(e => console.log(e));
+        });
+      },
+      updateValue(val) {
+          this.externalform.color = val.hex;
+      },
+      onShowChange(val) {
+        let event_data = {
+          id: val.id,
+          name: val.name,
+          color: val.color,
+          show: val.show
+        };
+        this.$store
+            .dispatch("eventStore/updateExternal", event_data)
+            .then(msg => {
+
+            })
+            .catch(e => console.log(e));
       }
     },
     created () {
@@ -435,5 +663,110 @@
   }
   .hasError {
     border-color: red;
+  }
+  .completed {
+    text-decoration: line-through;
+    color: #0e0e0e;
+  }
+  .my-flex {
+    justify-content: space-between;
+    display: inline-flex;
+  }
+  input[type="date"]::-ms-clear {
+    display: none;
+  }
+  input[type="date"]::-webkit-clear-button {
+    display: none;
+  }
+  form {
+    font-family: "Lucida Grande", sans-serif;
+  }
+  .form-inline {
+    margin-top: 10px;
+  }
+  td {
+    div {
+      a {
+        margin: 0 10px;
+      }
+    }
+  }
+  .fc-sun { background-color: #f7f7f7; }
+  .fc-sat { background-color: #f7f7f7;  }
+  .fc-today { background-color: #ffc;  }
+  .fc-day-number {color: #5e5e5e}
+  .fc-content {
+    display: flex;
+    input {
+      margin-top: 3px;
+    }
+    li {
+      width: 10px;
+      margin-left: 5px;
+    }
+    span {
+      margin-left: 3px;
+    }
+  }
+
+  // show/hide slider css
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+
+  input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+
+  input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 34px;
+  }
+
+  .slider.round:before {
+    border-radius: 50%;
   }
 </style>

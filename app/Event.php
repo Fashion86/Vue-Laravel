@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Event extends Model
 {
     protected $fillable = [
-        'project_id', 'user_id', 'title', 'type', 'start', 'end', 'complete', 'multi_day'
+        'project_id', 'user_id', 'external_id', 'description', 'title', 'type', 'start', 'end', 'start_time', 'end_time', 'complete', 'multi_day'
     ];
     public function user()
     {
@@ -16,5 +16,9 @@ class Event extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+    public function external()
+    {
+        return $this->belongsTo(External::class);
     }
 }

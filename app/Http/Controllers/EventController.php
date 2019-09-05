@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Event;
+use App\External;
 use Illuminate\Support\Facades\Date;
 use Validator;
 use Response;
@@ -28,14 +29,17 @@ class EventController extends Controller
                 $end = new DateTime($request->get('end'));
             }
 
-            $event = Event::create([
+            Event::create([
                 'title' => $request->get('title'),
                 'type' => $request->get('type'),
                 'start' => $start,
                 'end' => $end,
+                'start_time' => $request->get('start_time'),
+                'end_time' => $request->get('end_time'),
                 'user_id' => $request->get('user_id'),
                 'project_id' => $request->get('project_id'),
                 'complete' => $request->get('complete'),
+                'description' => $request->get('description'),
                 'multi_day' => $request->get('multi_day'),
             ]);
             $resdata = Event::query()->latest('id')->first();
@@ -55,20 +59,26 @@ class EventController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 500);
         }
+        $start = new DateTime($request->get('start'));
+        $end = null;
+        if ($request->get('end')) {
+            $end = new DateTime($request->get('end'));
+        }
         try {
             $event = Event::find($request->get('id'));
             $event->update([
                 'title' => $request->get('title'),
                 'type' => $request->get('type'),
-                'start' => $request->get('start'),
-                'end' => $request->get('end'),
+                'start' => $start,
+                'end' => $end,
                 'user_id' => $request->get('user_id'),
                 'project_id' => $request->get('project_id'),
                 'complete' => $request->get('complete'),
+                'description' => $request->get('description'),
                 'multi_day' => $request->get('multi_day'),
             ]);
-
-            return Response::json(['success' => 'Event is Successfully updated', 'event'=>$event], 200);
+            $return_data = Event::find($request->get('id'));
+            return Response::json(['success' => 'Event is Successfully updated', 'event'=>$return_data], 200);
         } catch (JWTException $e) {
             return Response::json(['error' => $e], 500);
         }
@@ -85,12 +95,15 @@ class EventController extends Controller
     }
 
     public function getEvents() {
-        $totalCount = count(Event::all());
+//        $totalCount = count(Event::all());
         $events = Event::all();
-        if ($totalCount == 0) {
-            return response()->json(['totalCount'=>$totalCount, 'events'=>[]], 200);
-        } else {
-            return response()->json(['totalCount'=>$totalCount, 'events'=>$events], 200);
-        }
+        $externals = External::all();
+//        if ($totalCount == 0) {
+//            return response()->json(['totalCount'=>$totalCount, 'events'=>[]], 200);
+//        } else {
+        return response()->json(['externals'=>$externals, 'events'=>$events], 200);
+//        }
     }
+
+
 }

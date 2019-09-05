@@ -44,51 +44,40 @@ export default {
           .catch(e => {reject(e)})
       })
     },
-    //
-    // updateProject({ commit, rootState }, { formData, id }) {
-    //   return new Promise((resolve, reject) => {
-    //     const data = { ...formData }
-    //     invoiceApi
-    //       .put(`/project/${id}/`, data, {
-    //         headers: {
-    //           Authorization: `Token ${rootState.authToken}`
-    //         }
-    //       })
-    //       .then(response => {
-    //         if (response.status === 200) {
-    //           commit('updateProject', { data, id })
-    //           resolve('updated')
-    //         }
-    //       })
-    //       .catch(e => reject(e))
-    //   })
-    // },
-    //
-    // removeProject({ commit, rootState }, id) {
-    //   new Promise((resolve, reject) => {
-    //     invoiceApi
-    //       .delete(`/project/${id}`, {
-    //         headers: {
-    //           Authorization: `Token ${rootState.authToken}`
-    //         }
-    //       })
-    //       .then(response => {
-    //         if (response.status >= 200 && response.status <= 204) {
-    //           commit('removeProject', id)
-    //           resolve('removed')
-    //         } else reject('error')
-    //       })
-    //       .catch(e => reject(e))
-    //   })
-    // }
+    updateProject({ commit, rootState }, formData) {
+      return new Promise((resolve, reject) => {
+        invoiceApi
+            .post(`/editproject`, formData)
+            .then(response => {
+              if (response.status === 200) {
+                commit('updateProject', response.data.project)
+                resolve('updated')
+              }
+            })
+            .catch(e => reject(e))
+      })
+    },
+    removeProject({ commit, rootState }, id) {
+      new Promise((resolve, reject) => {
+        invoiceApi
+            .delete(`/projects/${id}`)
+            .then(response => {
+              if (response.status >= 200 && response.status <= 204) {
+                commit('removeProject', id);
+                resolve('removed')
+              } else reject('error')
+            })
+            .catch(e => reject(e))
+      })
+    }
   },
 
   mutations: {
     setProjectList: (state, list) => (state.projects = list),
     addProject: (state, data) => state.projects.push(data),
-    updateProject: (state, { data, id }) => {
-      const index = state.projects.indexOf(u => u.id === id)
-      state.projects[index] = { ...data }
+    updateProject: (state, data) => {
+      const index = state.projects.findIndex(c => c.id === data.id);
+      Object.assign(state.projects[index], data);
     },
     removeProject: (state, id) =>
       (state.projects = state.projects.filter(project => project.id !== id))

@@ -25,10 +25,14 @@ Route::group([
     Route::post('project', 'ProjectController@addProject');
     Route::get('projects', 'ProjectController@getProjects');
     Route::get('users', 'AuthController@getUsers');
-    Route::post('event', 'EventController@addEvent');
+    Route::post('addevent', 'EventController@addEvent');
+    Route::post('editevent', 'EventController@updateEvent');
     Route::get('events', 'EventController@getEvents');
     Route::delete('events/{id}', 'EventController@deleteEvent');
-    Route::put('event}', 'EventController@updateEvent');
+    Route::delete('projects/{id}', 'ProjectController@deleteProject');
+    Route::post('editproject', 'ProjectController@updateProject');
+    Route::post('externalEvent', 'ExternalController@addExternalEvent');
+    Route::post('editexternal', 'ExternalController@updateExternal');
 //    Route::post('logout', 'AuthController@logout');
 //    Route::post('refresh', 'AuthController@refresh');
 //    Route::post('me', 'AuthController@me');

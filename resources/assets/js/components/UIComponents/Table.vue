@@ -3,12 +3,19 @@
     <thead>
       <slot name="columns">
         <th v-for="column in columns">{{column}}</th>
+        <th colspan="1">Actions</th>
       </slot>
     </thead>
     <tbody>
     <tr v-for="item in data">
       <slot :row="item">
         <td v-for="column in columns" v-if="hasValue(item, column)" @click="gotoProject(item)">{{itemValue(item, column)}}</td>
+        <td>
+          <div>
+            <a><font-awesome-icon icon="pen-alt" /></a>
+            <a><font-awesome-icon icon="trash-alt" /></a>
+          </div>
+        </td>
       </slot>
     </tr>
     </tbody>
@@ -35,5 +42,12 @@
     }
   }
 </script>
-<style>
+<style lang="scss">
+  td {
+    div {
+      a {
+        margin: 0 10px;
+      }
+    }
+  }
 </style>

@@ -110,4 +110,7 @@
   a:hover {
     cursor: pointer;
   }
+  .navbar {
+    height: 20px;
+  }
 </style>
